@@ -49,9 +49,7 @@ class Builder
     public function prepare()
     {
         $resources = $this->resources->filter(function ($resource) {
-            $extension = pathinfo($resource, PATHINFO_EXTENSION);
-
-            return in_array($extension, $this->supported);
+            return in_array($this->getExtension($resource), $this->supported);
         });
 
         if ($resources->count() < 1) {
@@ -78,11 +76,26 @@ class Builder
         ];
 
         return $collection->map(function ($path) use ($dictionary) {
-            $extension = pathinfo($path, PATHINFO_EXTENSION);
+            $extension = $this->getExtension($path);
 
             $type = $dictionary[$extension] ?? 'image';
 
             return compact('path', 'type');
         });
+    }
+
+    /**
+     * Get the extension of a file and remove query parameters.
+     *
+     * @param string $path
+     *
+     * @return string
+     */
+    private function getExtension($path)
+    {
+        return strtok(
+            pathinfo($path, PATHINFO_EXTENSION),
+            '?'
+        );
     }
 }

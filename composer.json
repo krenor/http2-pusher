@@ -25,6 +25,7 @@
     "illuminate/http": "~5.5",
     "illuminate/support": "~5.5",
     "symfony/dom-crawler": "^3.3",
+    "illuminate/container": "^5.5",
     "symfony/css-selector": "^3.3"
   },
   "require-dev": {

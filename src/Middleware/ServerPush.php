@@ -30,7 +30,10 @@ class ServerPush
         }
 
         if (!$request->ajax()) {
-            $resources = $this->retrieveLinkableElements($response);
+            $resources = array_unique(array_merge(
+                $this->retrieveManifestContents(),
+                $this->retrieveLinkableElements($response)
+            ));
 
             $header = (new Builder($resources))->prepare();
 
@@ -41,6 +44,28 @@ class ServerPush
         }
 
         return $response;
+    }
+
+    /**
+     * Read the mix manifest file for possible contents to push.
+     *
+     * @return array
+     *
+     * @throws Exception
+     */
+    private function retrieveManifestContents()
+    {
+        $directory = Container::getInstance()->make('path.public');
+        $manifestFile = $directory . DIRECTORY_SEPARATOR . 'mix-manifest.json';
+
+        if (!file_exists($manifestFile)) {
+            return [];
+        }
+
+        $content = json_decode(file_get_contents($manifestFile), true);
+
+        // TODO: Ordering might be necessary here, too: https://laravel.com/docs/5.5/mix#vendor-extraction
+        return array_values($content);
     }
 
     /**

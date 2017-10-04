@@ -3,9 +3,10 @@
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use PHPUnit\Framework\TestCase;
+use Illuminate\Container\Container;
 use Krenor\Http2Pusher\Middleware\ServerPush;
 
-class ServerPushTest extends TestCase
+class ServerPushMiddlewareTest extends TestCase
 {
     /**
      * @var Request
@@ -24,6 +25,46 @@ class ServerPushTest extends TestCase
     {
         $this->request = new Request();
         $this->middleware = new ServerPush();
+
+        // "public_path" helper comes in "Illuminate/Foundation" which is no standalone dependency.
+        Container::getInstance()->instance('path.public', false);
+    }
+
+    /** @test */
+    public function it_should_read_contents_of_the_manifest_file()
+    {
+        $path = __DIR__ . DIRECTORY_SEPARATOR . 'fixtures';
+
+        Container::getInstance()->instance('path.public', $path);
+
+        $response = $this->middleware->handle($this->request, $this->getResponse('default'));
+
+        $this->assertTrue($response->headers->has('Link'));
+
+        $link = $response->headers->get('Link');
+
+        $this->assertContains('style', $link);
+        $this->assertContains('script', $link);
+        $this->assertNotContains('image', $link);
+        $this->assertCount(4, explode(',', $link));
+    }
+
+    /** @test */
+    public function it_should_not_contain_same_resources_to_push()
+    {
+        $path = __DIR__ . DIRECTORY_SEPARATOR . 'fixtures';
+
+        Container::getInstance()->instance('path.public', $path);
+
+        $response = $this->middleware->handle($this->request, $this->getResponse('with-manifest-references'));
+
+        $this->assertTrue($response->headers->has('Link'));
+
+        $link = $response->headers->get('Link');
+
+        $this->assertContains('style', $link);
+        $this->assertContains('script', $link);
+        $this->assertCount(6, explode(',', $link));
     }
 
     /** @test */
