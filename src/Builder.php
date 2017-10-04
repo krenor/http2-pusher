@@ -20,6 +20,7 @@ class Builder
      */
     protected $supported = [
         'jpeg',
+        'jpg',
         'png',
         'gif',
         'bmp',
