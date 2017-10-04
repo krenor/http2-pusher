@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "1c450e78797288c0e57333e19be8dcdc",
+    "content-hash": "56288ee37f5457233f824f06f2edabeb",
     "packages": [
         {
             "name": "doctrine/inflector",
@@ -950,6 +950,52 @@
         }
     ],
     "packages-dev": [
+        {
+            "name": "diablomedia/phpunit-pretty-printer",
+            "version": "v2.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/diablomedia/phpunit-pretty-printer.git",
+                "reference": "55d5913788bf77a42c00eaf08c5be2e09f2de69f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/diablomedia/phpunit-pretty-printer/zipball/55d5913788bf77a42c00eaf08c5be2e09f2de69f",
+                "reference": "55d5913788bf77a42c00eaf08c5be2e09f2de69f",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.0.0",
+                "phpunit/phpunit": ">=6.0.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "DiabloMedia\\PHPUnit\\Printer\\": "src/DiabloMedia/PHPUnit/Printer"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Ari Pringle",
+                    "email": "ari@diablomedia.com",
+                    "homepage": "https://diablomedia.com"
+                }
+            ],
+            "description": "A PHPUnit result printer that shows per-file test progress and execution times",
+            "homepage": "https://github.com/diablomedia/phpunit-pretty-printer",
+            "keywords": [
+                "phpunit",
+                "printer",
+                "result",
+                "test",
+                "unit"
+            ],
+            "time": "2017-04-18T14:57:43+00:00"
+        },
         {
             "name": "doctrine/instantiator",
             "version": "1.1.0",
