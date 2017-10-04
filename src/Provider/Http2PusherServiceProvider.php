@@ -1,6 +1,6 @@
 <?php
 
-namespace Krenor\Http2Pusher\Providers;
+namespace Krenor\Http2Pusher\Provider;
 
 use Illuminate\Support\ServiceProvider;
 use Krenor\Http2Pusher\Factory\ResponseFactory;

@@ -41,7 +41,9 @@
   },
   "extra": {
     "laravel": {
-      "providers": []
+      "providers": [
+        "Krenor\\Http2Pusher\\Provider\\Http2PusherServiceProvider"
+      ]
     }
   }
 }
