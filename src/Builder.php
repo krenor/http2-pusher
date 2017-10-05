@@ -76,11 +76,13 @@ class Builder
         ];
 
         return $collection->map(function ($path) use ($dictionary) {
+            $hash = $this->determineHash($path);
+
             $extension = $this->getExtension($path);
 
             $type = $dictionary[$extension] ?? 'image';
 
-            return compact('path', 'type');
+            return compact('path', 'type', 'hash');
         });
     }
 
@@ -97,5 +99,31 @@ class Builder
             pathinfo($path, PATHINFO_EXTENSION),
             '?'
         );
+    }
+
+    /**
+     * Generate or get a hash of a file.
+     *
+     * @param string $path
+     *
+     * @return string
+     */
+    private function determineHash(string $path): string
+    {
+        $pieces = parse_url($path);
+
+        // External url
+        if (isset($pieces['host'])) {
+            return substr(hash_file('md5', $path), 0, 12);
+        } else {
+            // TODO: Might want to check for additional version strings other than Mixs'.
+            preg_match('/id=([a-f0-9]{20})/', $path, $matches);
+
+            if (last($matches)) {
+                return substr(last($matches), 0, 12);
+            }
+
+            return substr(hash_file('md5', public_path($path)), 0, 12);
+        }
     }
 }

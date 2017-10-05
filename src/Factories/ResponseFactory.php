@@ -1,6 +1,6 @@
 <?php
 
-namespace Krenor\Http2Pusher\Factory;
+namespace Krenor\Http2Pusher\Factories;
 
 use Krenor\Http2Pusher\Response;
 use Illuminate\Routing\ResponseFactory as BaseResponseFactory;

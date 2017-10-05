@@ -39,10 +39,18 @@
       "Krenor\\Http2Pusher\\": "src/"
     }
   },
+  "autoload-dev": {
+    "psr-4": {
+      "Krenor\\Http2Pusher\\Tests\\": "tests/"
+    },
+    "files": [
+      "tests/helpers.php"
+    ]
+  },
   "extra": {
     "laravel": {
       "providers": [
-        "Krenor\\Http2Pusher\\Provider\\Http2PusherServiceProvider"
+        "Krenor\\Http2Pusher\\Providers\\Http2PusherServiceProvider"
       ]
     }
   }

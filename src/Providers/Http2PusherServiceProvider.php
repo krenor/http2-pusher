@@ -1,9 +1,9 @@
 <?php
 
-namespace Krenor\Http2Pusher\Provider;
+namespace Krenor\Http2Pusher\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Krenor\Http2Pusher\Factory\ResponseFactory;
+use Krenor\Http2Pusher\Factories\ResponseFactory;
 use Illuminate\Contracts\View\Factory as ViewFactoryContract;
 use Illuminate\Contracts\Routing\ResponseFactory as ResponseFactoryContract;
 
