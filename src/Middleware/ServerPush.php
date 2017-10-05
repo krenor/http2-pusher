@@ -34,10 +34,10 @@ class ServerPush
                 $this->retrieveLinkableElements($response)
             ));
 
-            $header = (new Builder($resources))->prepare();
+            $push = (new Builder($resources))->prepare($request);
 
-            if ($header !== null) {
-                $response->header('Link', $header);
+            if ($push !== null) {
+                $response->header('Link', $push['link']);
             }
 
         }

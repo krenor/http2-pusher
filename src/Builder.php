@@ -2,7 +2,9 @@
 
 namespace Krenor\Http2Pusher;
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Symfony\Component\HttpFoundation\Cookie;
 
 class Builder
 {
@@ -40,13 +42,15 @@ class Builder
     }
 
     /**
-     * Build the HTTP2 Push link.
+     * Build the HTTP2 Push link and cache digest cookie.
      *
      * @see https://w3c.github.io/preload/#server-push-(http/2)
      *
-     * @return string|null
+     * @param Request $request
+     *
+     * @return array|null
      */
-    public function prepare()
+    public function prepare(Request $request)
     {
         $resources = $this->resources->filter(function ($resource) {
             return in_array($this->getExtension($resource), $this->supported);
@@ -56,9 +60,34 @@ class Builder
             return null;
         }
 
-        return $this->transform($resources)->map(function ($item) {
+        $transformed = $this->transform($resources);
+        $pushable = clone($transformed);
+
+        $cookie = $request->cookie('h2_cache-digest');
+
+        if ($cookie) {
+            if ($cookie === $transformed->toJson()) {
+                return null;
+            }
+
+            $cached = json_decode($cookie, true);
+
+            $pushable = $transformed->filter(function ($item) use ($cached) {
+                return !in_array($item, $cached);
+            });
+
+            if ($pushable->count() < 1) {
+                return null;
+            }
+        }
+
+        $link = $pushable->map(function ($item) {
             return "<{$item['path']}>; rel=preload; as={$item['type']}";
         })->implode(',');
+
+        $cookie = new Cookie('h2_cache-digest', $transformed->toJson(), strtotime('+60 days'));
+
+        return compact('link', 'cookie');
     }
 
     /**
