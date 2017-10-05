@@ -1,8 +1,7 @@
 <?php
 
-namespace Krenor\Http2Pusher\Tests;
-
 use Krenor\Http2Pusher\Response;
+use Krenor\Http2Pusher\Tests\TestCase;
 
 class ResponseTest extends TestCase
 {

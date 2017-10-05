@@ -9,6 +9,11 @@ use Symfony\Component\HttpFoundation\Cookie;
 class Builder
 {
     /**
+     * @var Request
+     */
+    protected $request;
+
+    /**
      * The resources to push via HTTP2.
      *
      * @var Collection
@@ -32,13 +37,13 @@ class Builder
     ];
 
     /**
-     * Pusher constructor.
+     * Builder constructor.
      *
-     * @param array $resources
+     * @param Request $request
      */
-    public function __construct(array $resources)
+    public function __construct(Request $request)
     {
-        $this->resources = collect($resources);
+        $this->request = $request;
     }
 
     /**
@@ -46,13 +51,13 @@ class Builder
      *
      * @see https://w3c.github.io/preload/#server-push-(http/2)
      *
-     * @param Request $request
+     * @param array $resources
      *
-     * @return array|null
+     * @return Http2Push|null
      */
-    public function prepare(Request $request)
+    public function prepare(array $resources)
     {
-        $resources = $this->resources->filter(function ($resource) {
+        $resources = collect($resources)->filter(function ($resource) {
             return in_array($this->getExtension($resource), $this->supported);
         });
 
@@ -63,7 +68,7 @@ class Builder
         $transformed = $this->transform($resources);
         $pushable = clone($transformed);
 
-        $cookie = $request->cookie('h2_cache-digest');
+        $cookie = $this->request->cookie('h2_cache-digest');
 
         if ($cookie) {
             if ($cookie === $transformed->toJson()) {
@@ -87,7 +92,7 @@ class Builder
 
         $cookie = new Cookie('h2_cache-digest', $transformed->toJson(), strtotime('+60 days'));
 
-        return compact('link', 'cookie');
+        return new Http2Push($pushable, $cookie, $link);
     }
 
     /**

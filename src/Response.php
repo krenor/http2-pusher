@@ -15,11 +15,11 @@ class Response extends BaseResponse
      */
     public function pushes(Request $request, array $resources)
     {
-        $push = (new Builder($resources))->prepare($request);
+        $push = (new Builder($request))->prepare($resources);
 
         if ($push !== null) {
-            $this->header('Link', $push['link'])
-                 ->withCookie($push['cookie']);
+            $this->header('Link', $push->getLink())
+                 ->withCookie($push->getCookie());
         }
 
         return $this;

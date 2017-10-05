@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Krenor\Http2Pusher\Builder;
 use Krenor\Http2Pusher\Tests\TestCase;
@@ -59,7 +58,7 @@ class BuilderTest extends TestCase
             $this->assertFalse($item['type'] === null);
 
             $this->assertArrayHasKey('hash', $item);
-            $this->assertFalse($item['hash'] !== Str::substr($resources[$index], -20, 12));
+            $this->assertFalse($item['hash'] !== substr($resources[$index], -20, 12));
         });
 
         $this->assertTrue($transformed[0]['type'] === 'script');
@@ -69,11 +68,11 @@ class BuilderTest extends TestCase
     /** @test */
     public function it_should_return_null_when_no_pushable_resource_is_available()
     {
-        $builder = new Builder($this->nonPushable);
+        $builder = new Builder($this->request);
 
-        $prepared = $builder->prepare($this->request);
+        $push = $builder->prepare($this->nonPushable);
 
-        $this->assertFalse($prepared !== null);
+        $this->assertFalse($push !== null);
     }
 
 
@@ -82,28 +81,28 @@ class BuilderTest extends TestCase
     {
         $pushable = $this->pushable['internal'][0];
 
-        $builder = new Builder(array_merge(
+        $builder = new Builder($this->request);
+
+        $push = $builder->prepare(array_merge(
             $this->nonPushable,
             [$pushable]
         ));
 
-        $prepared = $builder->prepare($this->request);
-
-        $this->assertFalse($prepared === null);
+        $this->assertFalse($push === null);
 
         foreach ($this->nonPushable as $item) {
-            $this->assertNotContains($item, $prepared['link']);
+            $this->assertNotContains($item, $push->getLink());
         }
 
-        $this->assertContains($pushable, $prepared['link']);
+        $this->assertContains($pushable, $push->getLink());
     }
 
     /** @test */
     public function it_should_build_the_push_string_correctly_for_internal_assets()
     {
-        $builder = new Builder($this->pushable['internal']);
+        $builder = new Builder($this->request);
 
-        $prepared = $builder->prepare($this->request);
+        $push = $builder->prepare($this->pushable['internal']);
 
         $expected = "<{$this->pushable['internal'][0]}>; rel=preload; as=script,";
         $expected .= "<{$this->pushable['internal'][1]}>; rel=preload; as=style,";
@@ -111,36 +110,36 @@ class BuilderTest extends TestCase
         $expected .= "<{$this->pushable['internal'][3]}>; rel=preload; as=image,";
         $expected .= "<{$this->pushable['internal'][4]}>; rel=preload; as=image";
 
-        $this->assertSame($expected, $prepared['link']);
+        $this->assertSame($expected, $push->getLink());
     }
 
     /** @test */
     public function it_should_build_the_push_string_correctly_for_external_assets()
     {
-        $builder = new Builder($this->pushable['external']);
+        $builder = new Builder($this->request);
 
-        $prepared = $builder->prepare($this->request);
+        $push = $builder->prepare($this->pushable['external']);
 
         $expected = "<{$this->pushable['external'][0]}>; rel=preload; as=script,";
         $expected .= "<{$this->pushable['external'][1]}>; rel=preload; as=style,";
         $expected .= "<{$this->pushable['external'][2]}>; rel=preload; as=image,";
         $expected .= "<{$this->pushable['external'][3]}>; rel=preload; as=image";
 
-        $this->assertSame($expected, $prepared['link']);
+        $this->assertSame($expected, $push->getLink());
     }
 
     /** @test */
     public function it_should_add_a_cache_digest_cookie_if_not_already_set()
     {
-        $builder = new Builder($this->pushable['internal']);
+        $builder = new Builder($this->request);
 
-        $prepared = $builder->prepare($this->request);
+        $push = $builder->prepare($this->pushable['internal']);
 
         $transformed = $this->transform($this->pushable['internal']);
 
-        $this->assertNotNull($prepared['cookie']);
-        $this->assertNotNull($prepared['link']);
-        $this->assertSame($prepared['cookie']->getValue(), $transformed->toJson());
+        $this->assertNotNull($push->getCookie());
+        $this->assertNotNull($push->getLink());
+        $this->assertSame($push->getCookie()->getValue(), $transformed->toJson());
     }
 
     /** @test */
@@ -155,12 +154,11 @@ class BuilderTest extends TestCase
 
         $request = new Request([], [], [], $cookies);
 
-        $builder = new Builder($this->pushable['internal']);
+        $builder = new Builder($request);
 
-        $prepared = $builder->prepare($request);
+        $push = $builder->prepare($this->pushable['internal']);
 
-        $this->assertNull($prepared['link']);
-        $this->assertNull($prepared['cookie']);
+        $this->assertNull($push);
     }
 
     /** @test */
@@ -177,16 +175,16 @@ class BuilderTest extends TestCase
 
         $request = new Request([], [], [], $cookies);
 
-        $builder = new Builder($this->pushable['internal']);
+        $builder = new Builder($request);
 
-        $prepared = $builder->prepare($request);
+        $push = $builder->prepare($this->pushable['internal']);
 
-        $this->assertNotNull($prepared);
-        $this->assertCount(1, explode(',', $prepared['link']));
+        $this->assertNotNull($push);
+        $this->assertCount(1, explode(',', $push->getLink()));
 
         $this->assertSame(
             $this->transform($this->pushable['internal'])->toArray(),
-            json_decode($prepared['cookie']->getValue(), true)
+            json_decode($push->getCookie()->getValue(), true)
         );
     }
 
