@@ -44,7 +44,7 @@
       "Krenor\\Http2Pusher\\Tests\\": "tests/"
     },
     "files": [
-      "tests/helpers.php"
+      "tests/fixtures/helpers.php"
     ]
   },
   "extra": {

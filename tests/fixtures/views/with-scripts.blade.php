@@ -4,7 +4,7 @@
 </head>
 
 <body>
-    <script type="text/javascript" src="/js/my-first-script.js"></script>
+    <script type="text/javascript" src="/js/app.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-beta/js/bootstrap.min.js"></script>
 </body>
 </html>

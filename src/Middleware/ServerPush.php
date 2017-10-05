@@ -7,7 +7,6 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Krenor\Http2Pusher\Builder;
-use Illuminate\Container\Container;
 use Symfony\Component\DomCrawler\Crawler;
 
 class ServerPush
@@ -55,8 +54,7 @@ class ServerPush
      */
     private function retrieveManifestContents()
     {
-        $directory = Container::getInstance()->make('path.public');
-        $manifestFile = $directory . DIRECTORY_SEPARATOR . 'mix-manifest.json';
+        $manifestFile = public_path('mix-manifest.json');
 
         if (!file_exists($manifestFile)) {
             return [];

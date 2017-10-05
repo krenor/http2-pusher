@@ -1,2 +1,3 @@
 .idea/
 vendor/
+tests/fixtures/mix-manifest.json

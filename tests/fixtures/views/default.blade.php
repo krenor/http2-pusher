@@ -5,7 +5,7 @@
 
 <body>
     <script>
-        console.log('Eh');
+        console.log('Gotcha');
     </script>
 
     <p>Hello, world</p>
