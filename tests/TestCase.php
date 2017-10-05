@@ -2,11 +2,17 @@
 
 namespace Krenor\Http2Pusher\Tests;
 
+use Illuminate\Http\Request;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
 {
+    /**
+     * @var Request
+     */
+    protected $request;
+
     /**
      * @var array
      */
@@ -44,5 +50,7 @@ abstract class TestCase extends BaseTestCase
         // The function "public_path" is in "Illuminate/Foundation" which is no standalone dependency.
         Container::getInstance()
                  ->instance('path.public', __DIR__ . DIRECTORY_SEPARATOR . 'fixtures');
+
+        $this->request = new Request();
     }
 }

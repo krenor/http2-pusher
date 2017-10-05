@@ -1,17 +1,11 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
+use Krenor\Http2Pusher\Response;
 use Krenor\Http2Pusher\Tests\TestCase;
 use Krenor\Http2Pusher\Middleware\ServerPush;
 
 class ServerPushMiddlewareTest extends TestCase
 {
-    /**
-     * @var Request
-     */
-    private $request;
-
     /**
      * @var ServerPush
      */
@@ -24,7 +18,6 @@ class ServerPushMiddlewareTest extends TestCase
     {
         parent::setUp();
 
-        $this->request = new Request();
         $this->middleware = new ServerPush();
     }
 
@@ -38,14 +31,6 @@ class ServerPushMiddlewareTest extends TestCase
         if (file_exists($manifestFile)) {
             unlink($manifestFile);
         }
-    }
-
-    /** @test */
-    public function it_should_not_set_a_link_header_without_pushable_resources()
-    {
-        $response = $this->middleware->handle($this->request, $this->getResponse('default'));
-
-        $this->assertFalse($response->headers->has('Link'));
     }
 
     /** @test */
@@ -120,7 +105,7 @@ class ServerPushMiddlewareTest extends TestCase
     public function it_should_not_add_the_same_resources_when_crawling_and_reading_the_mix_manifest_file()
     {
         $this->createManifestFile();
-        
+
         $response = $this->middleware->handle($this->request, $this->getResponse('with-manifest-references'));
 
         $this->assertTrue($response->headers->has('Link'));
@@ -133,18 +118,16 @@ class ServerPushMiddlewareTest extends TestCase
     }
 
     /**
-     * @param string $fixture
+     * @param string $view
      *
      * @return Closure
      */
-    private function getResponse($fixture)
+    private function getResponse($view)
     {
-        $content = file_get_contents(__DIR__ . "/fixtures/views/{$fixture}.blade.php");
-
-        $response = new Response($content);
-
-        return function ($request) use ($response) {
-            return $response;
+        return function ($request) use ($view) {
+            return new Response(
+                file_get_contents(__DIR__ . "/fixtures/views/{$view}.blade.php")
+            );
         };
     }
 

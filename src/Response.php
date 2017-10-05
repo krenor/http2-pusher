@@ -2,21 +2,24 @@
 
 namespace Krenor\Http2Pusher;
 
+use Illuminate\Http\Request;
 use Illuminate\Http\Response as BaseResponse;
 
 class Response extends BaseResponse
 {
     /**
+     * @param Request $request
      * @param array $resources
      *
      * @return $this
      */
-    public function pushes(array $resources)
+    public function pushes(Request $request, array $resources)
     {
-        $header = (new Builder($resources))->prepare();
+        $push = (new Builder($resources))->prepare($request);
 
-        if ($header !== null) {
-            $this->header('Link', $header);
+        if ($push !== null) {
+            $this->header('Link', $push['link'])
+                 ->withCookie($push['cookie']);
         }
 
         return $this;

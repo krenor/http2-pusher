@@ -5,8 +5,7 @@ namespace Krenor\Http2Pusher\Middleware;
 use Closure;
 use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-use Krenor\Http2Pusher\Builder;
+use Krenor\Http2Pusher\Response;
 use Symfony\Component\DomCrawler\Crawler;
 
 class ServerPush
@@ -21,7 +20,7 @@ class ServerPush
      */
     public function handle(Request $request, Closure $next)
     {
-        /** @var \Illuminate\Http\Response $response */
+        /** @var \Krenor\Http2Pusher\Response $response */
         $response = $next($request);
 
         if ($response->isRedirection() || $request->isJson()) {
@@ -34,12 +33,7 @@ class ServerPush
                 $this->retrieveLinkableElements($response)
             ));
 
-            $push = (new Builder($resources))->prepare($request);
-
-            if ($push !== null) {
-                $response->header('Link', $push['link']);
-            }
-
+            $response = $response->pushes($request, $resources);
         }
 
         return $response;

@@ -7,18 +7,6 @@ use Krenor\Http2Pusher\Tests\TestCase;
 
 class BuilderTest extends TestCase
 {
-    /**
-     * @var Request
-     */
-    private $request;
-
-    public function setUp()
-    {
-        parent::setUp();
-
-        $this->request = new Request();
-    }
-
     /** @test */
     public function it_should_transform_internal_resources_into_a_proper_structure()
     {
