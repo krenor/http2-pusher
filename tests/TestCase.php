@@ -3,6 +3,7 @@
 namespace Krenor\Http2Pusher\Tests;
 
 use Illuminate\Http\Request;
+use Krenor\Http2Pusher\Builder;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 
@@ -12,6 +13,11 @@ abstract class TestCase extends BaseTestCase
      * @var Request
      */
     protected $request;
+
+    /**
+     * @var Builder
+     */
+    protected $builder;
 
     /**
      * @var array
@@ -52,5 +58,6 @@ abstract class TestCase extends BaseTestCase
                  ->instance('path.public', __DIR__ . DIRECTORY_SEPARATOR . 'fixtures');
 
         $this->request = new Request();
+        $this->builder = new Builder($this->request);
     }
 }

@@ -68,9 +68,7 @@ class BuilderTest extends TestCase
     /** @test */
     public function it_should_return_null_when_no_pushable_resource_is_available()
     {
-        $builder = new Builder($this->request);
-
-        $push = $builder->prepare($this->nonPushable);
+        $push = $this->builder->prepare($this->nonPushable);
 
         $this->assertFalse($push !== null);
     }
@@ -81,9 +79,7 @@ class BuilderTest extends TestCase
     {
         $pushable = $this->pushable['internal'][0];
 
-        $builder = new Builder($this->request);
-
-        $push = $builder->prepare(array_merge(
+        $push = $this->builder->prepare(array_merge(
             $this->nonPushable,
             [$pushable]
         ));
@@ -100,9 +96,7 @@ class BuilderTest extends TestCase
     /** @test */
     public function it_should_build_the_push_string_correctly_for_internal_assets()
     {
-        $builder = new Builder($this->request);
-
-        $push = $builder->prepare($this->pushable['internal']);
+        $push = $this->builder->prepare($this->pushable['internal']);
 
         $expected = "<{$this->pushable['internal'][0]}>; rel=preload; as=script,";
         $expected .= "<{$this->pushable['internal'][1]}>; rel=preload; as=style,";
@@ -116,9 +110,7 @@ class BuilderTest extends TestCase
     /** @test */
     public function it_should_build_the_push_string_correctly_for_external_assets()
     {
-        $builder = new Builder($this->request);
-
-        $push = $builder->prepare($this->pushable['external']);
+        $push = $this->builder->prepare($this->pushable['external']);
 
         $expected = "<{$this->pushable['external'][0]}>; rel=preload; as=script,";
         $expected .= "<{$this->pushable['external'][1]}>; rel=preload; as=style,";
@@ -131,9 +123,7 @@ class BuilderTest extends TestCase
     /** @test */
     public function it_should_add_a_cache_digest_cookie_if_not_already_set()
     {
-        $builder = new Builder($this->request);
-
-        $push = $builder->prepare($this->pushable['internal']);
+        $push = $this->builder->prepare($this->pushable['internal']);
 
         $transformed = $this->transform($this->pushable['internal']);
 

@@ -18,7 +18,7 @@ class ServerPushMiddlewareTest extends TestCase
     {
         parent::setUp();
 
-        $this->middleware = new ServerPush();
+        $this->middleware = new ServerPush($this->builder);
     }
 
     /**

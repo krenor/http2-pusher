@@ -10,7 +10,7 @@ class ResponseTest extends TestCase
     {
         $response = new Response();
 
-        $response->pushes($this->request, $this->nonPushable);
+        $response->pushes($this->builder, $this->nonPushable);
 
         $headers = $response->headers;
 
@@ -23,7 +23,7 @@ class ResponseTest extends TestCase
     {
         $response = new Response();
 
-        $response->pushes($this->request, $this->pushable['internal']);
+        $response->pushes($this->builder, $this->pushable['internal']);
 
         $headers = $response->headers;
 

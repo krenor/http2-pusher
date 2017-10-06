@@ -3,13 +3,28 @@
 namespace Krenor\Http2Pusher\Middleware;
 
 use Closure;
-use Exception;
 use Illuminate\Http\Request;
+use Krenor\Http2Pusher\Builder;
 use Krenor\Http2Pusher\Response;
 use Symfony\Component\DomCrawler\Crawler;
 
 class ServerPush
 {
+    /**
+     * @var Builder
+     */
+    protected $builder;
+
+    /**
+     * ServerPush constructor.
+     *
+     * @param Builder $builder
+     */
+    public function __construct(Builder $builder)
+    {
+        $this->builder = $builder;
+    }
+
     /**
      * Handle an incoming request.
      *
@@ -20,7 +35,7 @@ class ServerPush
      */
     public function handle(Request $request, Closure $next)
     {
-        /** @var \Krenor\Http2Pusher\Response $response */
+        /** @var Response $response */
         $response = $next($request);
 
         if ($response->isRedirection() || $request->isJson()) {
@@ -33,7 +48,7 @@ class ServerPush
                 $this->retrieveLinkableElements($response)
             ));
 
-            $response = $response->pushes($request, $resources);
+            $response = $response->pushes($this->builder, $resources);
         }
 
         return $response;
@@ -43,8 +58,6 @@ class ServerPush
      * Read the mix manifest file for possible contents to push.
      *
      * @return array
-     *
-     * @throws Exception
      */
     private function retrieveManifestContents()
     {
