@@ -4,7 +4,6 @@ namespace Krenor\Http2Pusher\Providers;
 
 use Krenor\Http2Pusher\Builder;
 use Illuminate\Support\ServiceProvider;
-use Krenor\Http2Pusher\Middleware\ServerPush;
 use Krenor\Http2Pusher\Factories\ResponseFactory;
 use Illuminate\Contracts\View\Factory as ViewFactoryContract;
 use Illuminate\Contracts\Routing\ResponseFactory as ResponseFactoryContract;
@@ -42,8 +41,6 @@ class Http2PusherServiceProvider extends ServiceProvider
         $this->registerBuilder();
 
         $this->registerResponse();
-
-        $this->registerMiddleware();
     }
 
     /**
@@ -70,21 +67,6 @@ class Http2PusherServiceProvider extends ServiceProvider
     {
         $this->app->singleton(ResponseFactoryContract::class, function ($app) {
             return new ResponseFactory($app[ViewFactoryContract::class], $app['redirect']);
-        });
-    }
-
-    /**
-     * Register the HTTP2 Push Middleware.
-     *
-     * @return void
-     */
-    private function registerMiddleware()
-    {
-        $this->app->singleton(ServerPush::class, function ($app) {
-            return new ServerPush(
-                $app[Builder::class],
-                $app['config']['http2-pusher']['middleware']
-            );
         });
     }
 }

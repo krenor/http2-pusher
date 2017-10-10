@@ -18,13 +18,9 @@ class ServerPushMiddlewareTest extends TestCase
     {
         parent::setUp();
 
-        $this->middleware = new ServerPush($this->builder, [
-            'crawl_dom' => true,
-            'manifest'  => [
-                'include' => true,
-                'path'    => public_path('mix-manifest.json'),
-            ],
-        ]);
+        $this->createManifestFile();
+
+        $this->middleware = new ServerPush($this->builder);
     }
 
     /**
@@ -40,77 +36,33 @@ class ServerPushMiddlewareTest extends TestCase
     }
 
     /** @test */
-    public function it_should_not_push_the_content_of_the_mix_manifest_file_if_disabled()
-    {
-        $this->middleware = new ServerPush($this->builder, [
-            'crawl_dom' => true,
-            'manifest'  => [
-                'include' => false,
-                'path'    => public_path('mix-manifest.json'),
-            ],
-        ]);
-
-        $this->createManifestFile();
-
-        $response = $this->middleware->handle($this->request, $this->getResponse('default'));
-
-        $this->assertFalse($response->headers->has('Link'));
-    }
-
-    /** @test */
-    public function it_should_not_crawl_the_dom_if_disabled()
-    {
-        $this->middleware = new ServerPush($this->builder, [
-            'crawl_dom' => false,
-            'manifest'  => [
-                'include' => true,
-                'path'    => public_path('mix-manifest.json'),
-            ],
-        ]);
-
-        $response = $this->middleware->handle($this->request, $this->getResponse('with-manifest-references'));
-
-        $this->assertFalse($response->headers->has('Link'));
-    }
-
-
-    /** @test */
-    public function it_should_push_the_content_of_the_mix_manifest_file_if_enabled()
-    {
-        $this->createManifestFile();
-
-        $response = $this->middleware->handle($this->request, $this->getResponse('default'));
-
-        $this->assertTrue($response->headers->has('Link'));
-
-        $link = $response->headers->get('Link');
-
-        $this->assertContains('style', $link);
-        $this->assertContains('script', $link);
-        $this->assertNotContains('image', $link);
-        $this->assertCount(4, explode(',', $link));
-    }
-
-    /** @test */
     public function it_should_crawl_for_scripts_and_push_them()
     {
-        $response = $this->middleware->handle($this->request, $this->getResponse('with-scripts'));
+        $response = $this->middleware->handle(
+            $this->request,
+            $this->getResponse('with-scripts')
+        );
 
         $this->assertTrue($response->headers->has('Link'));
 
         $link = $response->headers->get('Link');
 
-        $this->assertContains($this->pushable['internal'][0], $link);
         $this->assertContains($this->pushable['external'][0], $link);
+        $this->assertContains($this->pushable['internal'][0], $link);
+        $this->assertContains('/js/manifest.js', $link);
+        $this->assertContains('/js/vendor.js', $link);
         $this->assertStringEndsWith('as=script', $link);
 
-        $this->assertCount(2, explode(',', $link));
+        $this->assertCount(4, explode(',', $link));
     }
 
     /** @test */
     public function it_should_crawl_for_style_sheets_and_push_them()
     {
-        $response = $this->middleware->handle($this->request, $this->getResponse('with-styles'));
+        $response = $this->middleware->handle(
+            $this->request,
+            $this->getResponse('with-styles')
+        );
 
         $this->assertTrue($response->headers->has('Link'));
 
@@ -126,7 +78,10 @@ class ServerPushMiddlewareTest extends TestCase
     /** @test */
     public function it_should_crawl_for_images_and_push_them()
     {
-        $response = $this->middleware->handle($this->request, $this->getResponse('with-images'));
+        $response = $this->middleware->handle(
+            $this->request,
+            $this->getResponse('with-images')
+        );
 
         $this->assertTrue($response->headers->has('Link'));
 
@@ -142,32 +97,16 @@ class ServerPushMiddlewareTest extends TestCase
         $this->assertCount(5, explode(',', $link));
     }
 
-    /** @test */
-    public function it_should_not_add_the_same_resources_when_crawling_and_reading_the_mix_manifest_file()
-    {
-        $this->createManifestFile();
-
-        $response = $this->middleware->handle($this->request, $this->getResponse('with-manifest-references'));
-
-        $this->assertTrue($response->headers->has('Link'));
-
-        $link = $response->headers->get('Link');
-
-        $this->assertContains('style', $link);
-        $this->assertContains('script', $link);
-        $this->assertCount(6, explode(',', $link));
-    }
-
     /**
-     * @param string $view
+     * @param string $page
      *
      * @return Closure
      */
-    private function getResponse($view)
+    private function getResponse($page)
     {
-        return function ($request) use ($view) {
+        return function ($request) use ($page) {
             return new Response(
-                file_get_contents(__DIR__ . "/fixtures/views/{$view}.blade.php")
+                file_get_contents(__DIR__ . "/fixtures/pages/{$page}.html")
             );
         };
     }

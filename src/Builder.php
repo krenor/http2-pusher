@@ -70,24 +70,12 @@ class Builder
         }
 
         $transformed = $this->transform($supported);
-        $pushable = clone($transformed);
-
         $cookie = $this->request->cookie($this->settings['name']);
 
-        if ($cookie) {
-            if ($cookie === $transformed->toJson()) {
-                return null;
-            }
+        $pushable = $this->processCookieCache($transformed, $cookie);
 
-            $cached = json_decode($cookie, true);
-
-            $pushable = $transformed->filter(function ($item) use ($cached) {
-                return !in_array($item, $cached);
-            });
-
-            if ($pushable->count() < 1) {
-                return null;
-            }
+        if ($pushable->count() < 1) {
+            return null;
         }
 
         $link = $pushable->map(function ($item) {
@@ -168,5 +156,30 @@ class Builder
             pathinfo($path, PATHINFO_EXTENSION),
             '?'
         );
+    }
+
+    /**
+     * Check which resources already are cached.
+     *
+     * @param Collection $pushable
+     * @param null $cookie
+     *
+     * @return Collection
+     */
+    private function processCookieCache(Collection $pushable, $cookie = null): Collection
+    {
+        if ($cookie === null) {
+            return $pushable;
+        }
+
+        if ($cookie === $pushable->toJson()) {
+            return collect();
+        }
+
+        $cached = json_decode($cookie, true);
+
+        return $pushable->filter(function ($item) use ($cached) {
+            return !in_array($item, $cached);
+        });
     }
 }

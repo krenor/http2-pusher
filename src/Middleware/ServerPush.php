@@ -16,20 +16,13 @@ class ServerPush
     protected $builder;
 
     /**
-     * @var array
-     */
-    protected $settings;
-
-    /**
      * ServerPush constructor.
      *
      * @param Builder $builder
-     * @param array $settings
      */
-    public function __construct(Builder $builder, array $settings)
+    public function __construct(Builder $builder)
     {
         $this->builder = $builder;
-        $this->settings = $settings;
     }
 
     /**
@@ -49,43 +42,12 @@ class ServerPush
             return $response;
         }
 
-        $resources = collect();
-
-        if ($this->settings['manifest']['include']) {
-            $resources = $resources->merge($this->retrieveManifestContents());
-        }
-
-        if ($this->settings['crawl_dom']) {
-            $resources = $resources->merge($this->retrieveLinkableElements($response));
-        }
-
-        if ($resources->isNotEmpty()) {
-            $pushable = $resources->unique()->toArray();
-            $response = $response->pushes($this->builder, $pushable);
-        }
+        $response = $response->pushes(
+            $this->builder,
+            $this->retrieveLinkableElements($response)
+        );
 
         return $response;
-    }
-
-    /**
-     * Read the manifest file for possible content to push.
-     *
-     * @return array
-     */
-    private function retrieveManifestContents(): array
-    {
-        $manifest = $this->settings['manifest']['path'];
-
-        if (!file_exists($manifest)) {
-            return [];
-        }
-
-        $content = file_get_contents($manifest);
-
-        // TODO: Ordering might be necessary here, too: https://laravel.com/docs/5.5/mix#vendor-extraction
-        return array_values(
-            json_decode($content, true)
-        );
     }
 
     /**
@@ -97,11 +59,12 @@ class ServerPush
      */
     private function retrieveLinkableElements(Response $response): array
     {
-        $crawler = new Crawler($response->getContent());
+        $crawler = new Crawler($response->content());
 
         $content = $crawler->filter('link, script[src], img[src]')
                            ->extract(['src', 'href']);
 
+        // TODO: Ordering might be necessary for manifest files due to https://laravel.com/docs/5.5/mix#vendor-extraction
         return collect($content)->flatten(1)
                                 ->filter()
                                 ->toArray();
