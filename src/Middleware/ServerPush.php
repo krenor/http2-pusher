@@ -16,13 +16,20 @@ class ServerPush
     protected $builder;
 
     /**
+     * @var array
+     */
+    protected $settings;
+
+    /**
      * ServerPush constructor.
      *
      * @param Builder $builder
+     * @param array $settings
      */
-    public function __construct(Builder $builder)
+    public function __construct(Builder $builder, array $settings)
     {
         $this->builder = $builder;
+        $this->settings = $settings;
     }
 
     /**
@@ -33,52 +40,62 @@ class ServerPush
      *
      * @return Response
      */
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next): Response
     {
         /** @var Response $response */
         $response = $next($request);
 
-        if ($response->isRedirection() || $request->isJson()) {
+        if ($response->isRedirection() || $request->isJson() || $request->ajax()) {
             return $response;
         }
 
-        if (!$request->ajax()) {
-            $resources = array_unique(array_merge(
-                $this->retrieveManifestContents(),
-                $this->retrieveLinkableElements($response)
-            ));
+        $resources = collect();
 
-            $response = $response->pushes($this->builder, $resources);
+        if ($this->settings['manifest']['include']) {
+            $resources = $resources->merge($this->retrieveManifestContents());
+        }
+
+        if ($this->settings['crawl_dom']) {
+            $resources = $resources->merge($this->retrieveLinkableElements($response));
+        }
+
+        if ($resources->isNotEmpty()) {
+            $pushable = $resources->unique()->toArray();
+            $response = $response->pushes($this->builder, $pushable);
         }
 
         return $response;
     }
 
     /**
-     * Read the mix manifest file for possible contents to push.
+     * Read the manifest file for possible content to push.
      *
      * @return array
      */
-    private function retrieveManifestContents()
+    private function retrieveManifestContents(): array
     {
-        $manifestFile = public_path('mix-manifest.json');
+        $manifest = $this->settings['manifest']['path'];
 
-        if (!file_exists($manifestFile)) {
+        if (!file_exists($manifest)) {
             return [];
         }
 
-        $content = json_decode(file_get_contents($manifestFile), true);
+        $content = file_get_contents($manifest);
 
         // TODO: Ordering might be necessary here, too: https://laravel.com/docs/5.5/mix#vendor-extraction
-        return array_values($content);
+        return array_values(
+            json_decode($content, true)
+        );
     }
 
     /**
+     * Crawl the DOM for possible content to push.
+     *
      * @param Response $response
      *
      * @return array
      */
-    private function retrieveLinkableElements(Response $response)
+    private function retrieveLinkableElements(Response $response): array
     {
         $crawler = new Crawler($response->getContent());
 

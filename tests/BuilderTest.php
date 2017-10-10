@@ -139,12 +139,12 @@ class BuilderTest extends TestCase
                       ->toJson();
 
         $cookies = [
-            'h2_cache-digest' => $cache,
+            $this->builderSettings['name'] => $cache,
         ];
 
         $request = new Request([], [], [], $cookies);
 
-        $builder = new Builder($request);
+        $builder = new Builder($request, $this->builderSettings);
 
         $push = $builder->prepare($this->pushable['internal']);
 
@@ -160,12 +160,12 @@ class BuilderTest extends TestCase
                       ->toJson();
 
         $cookies = [
-            'h2_cache-digest' => $cache,
+            $this->builderSettings['name'] => $cache,
         ];
 
         $request = new Request([], [], [], $cookies);
 
-        $builder = new Builder($request);
+        $builder = new Builder($request, $this->builderSettings);
 
         $push = $builder->prepare($this->pushable['internal']);
 
@@ -185,31 +185,12 @@ class BuilderTest extends TestCase
      */
     private function transform(array $resources)
     {
-        $dictionary = [
-            'css' => 'style',
-            'js'  => 'script',
-        ];
+        $reflector = new ReflectionClass(Builder::class);
+        $method = $reflector->getMethod('transform');
+        $method->setAccessible(true);
 
-        return collect($resources)->map(function ($path) use ($dictionary) {
-            $pieces = parse_url($path);
-
-            if (isset($pieces['host'])) {
-                $hash = substr(hash_file('md5', $path), 0, 12);
-            } else {
-                preg_match('/id=([a-f0-9]{20})/', $path, $matches);
-
-                if (last($matches)) {
-                    $hash = substr(last($matches), 0, 12);
-                } else {
-                    $hash = substr(hash_file('md5', public_path($path)), 0, 12);
-                }
-            }
-
-            $extension = strtok(pathinfo($path, PATHINFO_EXTENSION), '?');
-
-            $type = $dictionary[$extension] ?? 'image';
-
-            return compact('path', 'type', 'hash');
-        });
+        return $method->invokeArgs($this->builder, [
+            collect($resources),
+        ]);
     }
 }

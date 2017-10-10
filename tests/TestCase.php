@@ -22,6 +22,14 @@ abstract class TestCase extends BaseTestCase
     /**
      * @var array
      */
+    protected $builderSettings = [
+        'name'     => 'h2_cache-digest',
+        'duration' => '60 days',
+    ];
+
+    /**
+     * @var array
+     */
     protected $pushable = [
         'internal' => [
             '/js/app.js',
@@ -58,6 +66,6 @@ abstract class TestCase extends BaseTestCase
                  ->instance('path.public', __DIR__ . DIRECTORY_SEPARATOR . 'fixtures');
 
         $this->request = new Request();
-        $this->builder = new Builder($this->request);
+        $this->builder = new Builder($this->request, $this->builderSettings);
     }
 }

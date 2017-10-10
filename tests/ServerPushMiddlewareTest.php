@@ -18,7 +18,13 @@ class ServerPushMiddlewareTest extends TestCase
     {
         parent::setUp();
 
-        $this->middleware = new ServerPush($this->builder);
+        $this->middleware = new ServerPush($this->builder, [
+            'crawl_dom' => true,
+            'manifest'  => [
+                'include' => true,
+                'path'    => public_path('mix-manifest.json'),
+            ],
+        ]);
     }
 
     /**
@@ -26,15 +32,50 @@ class ServerPushMiddlewareTest extends TestCase
      */
     public function tearDown()
     {
-        $manifestFile = public_path('mix-manifest.json');
+        $manifest = public_path('mix-manifest.json');
 
-        if (file_exists($manifestFile)) {
-            unlink($manifestFile);
+        if (file_exists($manifest)) {
+            unlink($manifest);
         }
     }
 
     /** @test */
-    public function it_should_push_the_content_of_the_mix_manifest_file()
+    public function it_should_not_push_the_content_of_the_mix_manifest_file_if_disabled()
+    {
+        $this->middleware = new ServerPush($this->builder, [
+            'crawl_dom' => true,
+            'manifest'  => [
+                'include' => false,
+                'path'    => public_path('mix-manifest.json'),
+            ],
+        ]);
+
+        $this->createManifestFile();
+
+        $response = $this->middleware->handle($this->request, $this->getResponse('default'));
+
+        $this->assertFalse($response->headers->has('Link'));
+    }
+
+    /** @test */
+    public function it_should_not_crawl_the_dom_if_disabled()
+    {
+        $this->middleware = new ServerPush($this->builder, [
+            'crawl_dom' => false,
+            'manifest'  => [
+                'include' => true,
+                'path'    => public_path('mix-manifest.json'),
+            ],
+        ]);
+
+        $response = $this->middleware->handle($this->request, $this->getResponse('with-manifest-references'));
+
+        $this->assertFalse($response->headers->has('Link'));
+    }
+
+
+    /** @test */
+    public function it_should_push_the_content_of_the_mix_manifest_file_if_enabled()
     {
         $this->createManifestFile();
 

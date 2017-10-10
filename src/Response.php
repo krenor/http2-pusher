@@ -7,6 +7,8 @@ use Illuminate\Http\Response as BaseResponse;
 class Response extends BaseResponse
 {
     /**
+     * Push resources via HTTP2 header.
+     *
      * @param Builder $builder
      * @param array $resources
      *
