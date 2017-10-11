@@ -16,7 +16,7 @@ class Builder
     protected $request;
 
     /**
-     * The cookie settings, such as the name and duration for example.
+     * Additional cookie and global pushable resources settings.
      *
      * @var array
      */
@@ -27,15 +27,20 @@ class Builder
      *
      * @var array
      */
-    protected $supported = [
-        'jpeg',
-        'jpg',
-        'png',
-        'gif',
-        'bmp',
-        'svg',
-        'css',
-        'js',
+    protected $extensionTypes = [
+        'css'   => 'style',
+        'js'    => 'script',
+        'ttf'   => 'font',
+        'otf'   => 'font',
+        'woff'  => 'font',
+        'woff2' => 'font',
+        'eot'   => 'font',
+        'jpeg'  => 'image',
+        'jpg'   => 'image',
+        'png'   => 'image',
+        'gif'   => 'image',
+        'bmp'   => 'image',
+        'svg'   => 'image',
     ];
 
     /**
@@ -61,16 +66,18 @@ class Builder
      */
     public function prepare(array $resources): ?Http2Push
     {
-        $supported = collect($resources)->filter(function ($resource) {
-            return in_array($this->getExtension($resource), $this->supported);
-        });
+        $supported = collect($resources)
+            ->merge($this->settings['global_pushes'])
+            ->filter(function ($resource) {
+                return array_key_exists($this->getExtension($resource), $this->extensionTypes);
+            });
 
         if ($supported->count() < 1) {
             return null;
         }
 
         $transformed = $this->transform($supported);
-        $cookie = $this->request->cookie($this->settings['name']);
+        $cookie = $this->request->cookie($this->settings['cookie']['name']);
 
         $pushable = $this->processCookieCache($transformed, $cookie);
 
@@ -78,14 +85,12 @@ class Builder
             return null;
         }
 
-        $link = $pushable->map(function ($item) {
-            return "<{$item['path']}>; rel=preload; as={$item['type']}";
-        })->implode(',');
+        $link = $this->buildLink($pushable);
 
         $cookie = new Cookie(
-            $this->settings['name'],
+            $this->settings['cookie']['name'],
             $transformed->toJson(),
-            strtotime("+{$this->settings['duration']}")
+            strtotime("+{$this->settings['cookie']['duration']}")
         );
 
         return new Http2Push($pushable, $cookie, $link);
@@ -100,17 +105,12 @@ class Builder
      */
     private function transform(Collection $collection): Collection
     {
-        $dictionary = [
-            'css' => 'style',
-            'js'  => 'script',
-        ];
-
-        return $collection->map(function ($path) use ($dictionary) {
+        return $collection->map(function ($path) {
             $hash = $this->retrieveHash($path);
 
             $extension = $this->getExtension($path);
 
-            $type = $dictionary[$extension] ?? 'image';
+            $type = $this->extensionTypes[$extension];
 
             return compact('path', 'type', 'hash');
         });
@@ -130,16 +130,16 @@ class Builder
         // External url
         if (isset($pieces['host'])) {
             return substr(hash_file('md5', $path), 0, 12);
-        } else {
-            // TODO: Might want to check for additional version strings other than Mixs'.
-            preg_match('/id=([a-f0-9]{20})/', $path, $matches);
-
-            if (last($matches)) {
-                return substr(last($matches), 0, 12);
-            }
-
-            return substr(hash_file('md5', public_path($path)), 0, 12);
         }
+
+        // TODO: Might want to check for additional version strings other than Mixs'.
+        preg_match('/id=([a-f0-9]{20})/', $path, $matches);
+
+        if (last($matches)) {
+            return substr(last($matches), 0, 12);
+        }
+
+        return substr(hash_file('md5', public_path($path)), 0, 12);
     }
 
 
@@ -162,24 +162,44 @@ class Builder
      * Check which resources already are cached.
      *
      * @param Collection $pushable
-     * @param null $cookie
+     * @param string|null $cache
      *
      * @return Collection
      */
-    private function processCookieCache(Collection $pushable, $cookie = null): Collection
+    private function processCookieCache(Collection $pushable, $cache = null): Collection
     {
-        if ($cookie === null) {
+        if ($cache === null) {
             return $pushable;
         }
 
-        if ($cookie === $pushable->toJson()) {
+        if ($cache === $pushable->toJson()) {
             return collect();
         }
 
-        $cached = json_decode($cookie, true);
+        $cached = json_decode($cache, true);
 
         return $pushable->filter(function ($item) use ($cached) {
             return !in_array($item, $cached);
         });
+    }
+
+    /**
+     * Create the HTTP2 Server Push link.
+     *
+     * @param Collection $pushable
+     *
+     * @return string
+     */
+    private function buildLink(Collection $pushable): string
+    {
+        return $pushable->map(function ($item) {
+            $push = "<{$item['path']}>; rel=preload; as={$item['type']}";
+
+            if ($item['type'] === 'font') {
+                return "{$push}; crossorigin";
+            }
+
+            return $push;
+        })->implode(',');
     }
 }

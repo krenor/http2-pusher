@@ -16,4 +16,18 @@ return [
         'name'     => 'h2_cache-digest',
         'duration' => '60 days',
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Global Pushes
+    |--------------------------------------------------------------------------
+    |
+    | Place URLs of any stylesheets, scripts, images or fonts you want to be
+    | pushed for every page load.
+    |
+    */
+
+    'global_pushes' => [
+        //
+    ],
 ];

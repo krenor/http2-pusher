@@ -23,27 +23,25 @@ abstract class TestCase extends BaseTestCase
      * @var array
      */
     protected $builderSettings = [
-        'name'     => 'h2_cache-digest',
-        'duration' => '60 days',
+        'cookie'        => [
+            'name'     => 'h2_cache-digest',
+            'duration' => '60 days',
+        ],
+        'global_pushes' => [
+            //
+        ],
     ];
 
     /**
      * @var array
      */
     protected $pushable = [
-        'internal' => [
-            '/js/app.js',
-            '/css/app.css',
-            '/images/chrome.svg',
-            '/images/github.png',
-            '/images/laravel.jpg',
-        ],
-        'external' => [
-            'https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-beta/js/bootstrap.min.js',
-            'https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-beta/css/bootstrap-grid.min.css',
-            'https://laravel.com/assets/img/laravel-logo-white.png',
-            'http://stylecampaign.com/blog/blogimages/SVG/fox-1.svg',
-        ],
+        '/js/app.js',
+        '/css/app.css',
+        '/images/chrome.svg',
+        '/images/github.png',
+        '/images/laravel.jpg',
+        '/fonts/lato-light.woff2',
     ];
 
     /**
@@ -57,7 +55,7 @@ abstract class TestCase extends BaseTestCase
     ];
 
     /**
-     * @inheritdoc
+     * Bootstrap the test environment.
      */
     public function setUp()
     {

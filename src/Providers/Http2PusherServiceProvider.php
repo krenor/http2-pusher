@@ -53,7 +53,7 @@ class Http2PusherServiceProvider extends ServiceProvider
         $this->app->singleton(Builder::class, function ($app) {
             return new Builder(
                 $app['request'],
-                $app['config']['http2-pusher']['cookie']
+                $app['config']['http2-pusher']
             );
         });
     }

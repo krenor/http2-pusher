@@ -31,9 +31,9 @@ class ServerPush
      * @param Request $request
      * @param Closure $next
      *
-     * @return Response
+     * @return Response|\Illuminate\Http\RedirectResponse
      */
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next)
     {
         /** @var Response $response */
         $response = $next($request);

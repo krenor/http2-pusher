@@ -1,6 +1,8 @@
 <?php
 
+use Illuminate\Http\Request;
 use Krenor\Http2Pusher\Response;
+use Illuminate\Http\RedirectResponse;
 use Krenor\Http2Pusher\Tests\TestCase;
 use Krenor\Http2Pusher\Middleware\ServerPush;
 
@@ -36,8 +38,65 @@ class ServerPushMiddlewareTest extends TestCase
     }
 
     /** @test */
+    public function it_should_not_push_anything_when_its_a_redirect_response()
+    {
+        $response = function ($request) {
+            return new RedirectResponse('http://laravel.com');
+        };
+
+        $response = $this->middleware->handle(
+            $this->request,
+            $response
+        );
+
+        $this->assertFalse($response->headers->has('Link'));
+        $this->assertInstanceOf(RedirectResponse::class, $response);
+    }
+
+    /** @test */
+    public function it_should_not_push_anything_when_its_a_json_request()
+    {
+        $this->request->headers->set('Content-Type', 'application/json');
+
+        $response = function ($request) {
+            return new Response;
+        };
+
+        $response = $this->middleware->handle(
+            $this->request,
+            $response
+        );
+
+        $this->assertFalse($response->headers->has('Link'));
+    }
+
+    /** @test */
+    public function it_should_not_push_anything_when_its_an_ajax_request()
+    {
+        $this->request->headers->set('X-Requested-With', 'XMLHttpRequest');
+
+        $response = function ($request) {
+            return new Response;
+        };
+
+        $response = $this->middleware->handle(
+            $this->request,
+            $response
+        );
+
+        $this->assertFalse($response->headers->has('Link'));
+    }
+
+    /** @test */
     public function it_should_crawl_for_scripts_and_push_them()
     {
+        $includes = [
+            'https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-beta/js/bootstrap.min.js',
+            '/js/manifest.js',
+            '/js/vendor.js',
+            '/js/app.js',
+        ];
+
         $response = $this->middleware->handle(
             $this->request,
             $this->getResponse('with-scripts')
@@ -47,18 +106,21 @@ class ServerPushMiddlewareTest extends TestCase
 
         $link = $response->headers->get('Link');
 
-        $this->assertContains($this->pushable['external'][0], $link);
-        $this->assertContains($this->pushable['internal'][0], $link);
-        $this->assertContains('/js/manifest.js', $link);
-        $this->assertContains('/js/vendor.js', $link);
-        $this->assertStringEndsWith('as=script', $link);
+        foreach ($includes as $include) {
+            $this->assertContains($include, $link);
+        }
 
-        $this->assertCount(4, explode(',', $link));
+        $this->assertCount(count($includes), explode(',', $link));
     }
 
     /** @test */
     public function it_should_crawl_for_style_sheets_and_push_them()
     {
+        $includes = [
+            'https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-beta/css/bootstrap-grid.min.css',
+            '/css/app.css',
+        ];
+
         $response = $this->middleware->handle(
             $this->request,
             $this->getResponse('with-styles')
@@ -68,16 +130,24 @@ class ServerPushMiddlewareTest extends TestCase
 
         $link = $response->headers->get('Link');
 
-        $this->assertContains($this->pushable['internal'][1], $link);
-        $this->assertContains($this->pushable['external'][1], $link);
-        $this->assertStringEndsWith('as=style', $link);
+        foreach ($includes as $include) {
+            $this->assertContains($include, $link);
+        }
 
-        $this->assertCount(2, explode(',', $link));
+        $this->assertCount(count($includes), explode(',', $link));
     }
 
     /** @test */
     public function it_should_crawl_for_images_and_push_them()
     {
+        $includes = [
+            'http://stylecampaign.com/blog/blogimages/SVG/fox-1.svg',
+            'https://laravel.com/assets/img/laravel-logo-white.png',
+            '/images/laravel.jpg',
+            '/images/chrome.svg',
+            '/images/github.png',
+        ];
+
         $response = $this->middleware->handle(
             $this->request,
             $this->getResponse('with-images')
@@ -87,14 +157,11 @@ class ServerPushMiddlewareTest extends TestCase
 
         $link = $response->headers->get('Link');
 
-        $this->assertContains($this->pushable['internal'][2], $link);
-        $this->assertContains($this->pushable['internal'][3], $link);
-        $this->assertContains($this->pushable['internal'][4], $link);
-        $this->assertContains($this->pushable['external'][2], $link);
-        $this->assertContains($this->pushable['external'][3], $link);
-        $this->assertStringEndsWith('as=image', $link);
+        foreach ($includes as $include) {
+            $this->assertContains($include, $link);
+        }
 
-        $this->assertCount(5, explode(',', $link));
+        $this->assertCount(count($includes), explode(',', $link));
     }
 
     /**
