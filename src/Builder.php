@@ -64,7 +64,7 @@ class Builder
      *
      * @return Http2Push|null
      */
-    public function prepare(array $resources): ?Http2Push
+    public function prepare(array $resources)
     {
         $supported = collect($resources)
             ->merge($this->settings['global_pushes'])

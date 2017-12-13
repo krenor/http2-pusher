@@ -42,12 +42,10 @@ class ServerPush
             return $response;
         }
 
-        $response = $response->pushes(
+        return $response->pushes(
             $this->builder,
             $this->retrieveLinkableElements($response)
         );
-
-        return $response;
     }
 
     /**

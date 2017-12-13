@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Http\Request;
 use Krenor\Http2Pusher\Response;
 use Illuminate\Http\RedirectResponse;
 use Krenor\Http2Pusher\Tests\TestCase;
@@ -40,13 +39,13 @@ class ServerPushMiddlewareTest extends TestCase
     /** @test */
     public function it_should_not_push_anything_when_its_a_redirect_response()
     {
-        $response = function ($request) {
+        $next = function () {
             return new RedirectResponse('http://laravel.com');
         };
 
         $response = $this->middleware->handle(
             $this->request,
-            $response
+            $next
         );
 
         $this->assertFalse($response->headers->has('Link'));
@@ -58,13 +57,13 @@ class ServerPushMiddlewareTest extends TestCase
     {
         $this->request->headers->set('Content-Type', 'application/json');
 
-        $response = function ($request) {
+        $next = function () {
             return new Response;
         };
 
         $response = $this->middleware->handle(
             $this->request,
-            $response
+            $next
         );
 
         $this->assertFalse($response->headers->has('Link'));
@@ -75,13 +74,13 @@ class ServerPushMiddlewareTest extends TestCase
     {
         $this->request->headers->set('X-Requested-With', 'XMLHttpRequest');
 
-        $response = function ($request) {
+        $next = function () {
             return new Response;
         };
 
         $response = $this->middleware->handle(
             $this->request,
-            $response
+            $next
         );
 
         $this->assertFalse($response->headers->has('Link'));
@@ -171,7 +170,7 @@ class ServerPushMiddlewareTest extends TestCase
      */
     private function getResponse($page)
     {
-        return function ($request) use ($page) {
+        return function () use ($page) {
             return new Response(
                 file_get_contents(__DIR__ . "/fixtures/pages/{$page}.html")
             );

@@ -108,7 +108,10 @@ class BuilderTest extends TestCase
 
         $this->assertNotNull($push);
         $this->assertNotNull($push->getCookie());
+        $this->assertNotNull($push->getResources());
+
         $this->assertSame($push->getCookie()->getValue(), $transformed->toJson());
+        $this->assertSame($push->getResources()->pluck('path')->toArray(), $this->pushable);
     }
 
     /** @test */
