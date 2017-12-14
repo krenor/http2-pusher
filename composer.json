@@ -22,16 +22,16 @@
   ],
   "require": {
     "php": ">=7.0.0",
-    "illuminate/http": "~5.5",
+    "illuminate/http": "^5.5",
     "illuminate/routing": "^5.5",
-    "illuminate/support": "~5.5",
+    "illuminate/support": "^5.5",
     "illuminate/container": "^5.5",
-    "symfony/dom-crawler": "^3.3",
-    "symfony/css-selector": "^3.3"
+    "symfony/dom-crawler": "^3.4",
+    "symfony/css-selector": "^3.4"
   },
   "require-dev": {
-    "mockery/mockery": "0.9.*",
-    "phpunit/phpunit": "~6.0",
+    "mockery/mockery": "^1.0",
+    "phpunit/phpunit": "^6.0",
     "diablomedia/phpunit-pretty-printer": "^2.0"
   },
   "autoload": {
