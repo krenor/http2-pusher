@@ -1,2 +1,4 @@
 .idea/
 vendor/
+phpunit/
+tests/fixtures/mix-manifest.json

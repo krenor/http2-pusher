@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit backupGlobals="false"
+         backupStaticAttributes="false"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         printerClass="DiabloMedia\PHPUnit\Printer\PrettyPrinter"
+         convertErrorsToExceptions="true"
+         convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true"
+         processIsolation="false"
+         stopOnFailure="false">
+    <testsuites>
+        <testsuite name="Default">
+            <directory suffix="Test.php">./tests</directory>
+        </testsuite>
+    </testsuites>
+    <filter>
+        <whitelist processUncoveredFilesFromWhitelist="true">
+            <directory suffix=".php">./src</directory>
+            <exclude>
+                <directory suffix=".php">./src/config</directory>
+                <directory suffix=".php">./src/Providers</directory>
+                <directory suffix=".php">./src/Factories</directory>
+            </exclude>
+        </whitelist>
+    </filter>
+    <logging>
+        <log type="junit" target="phpunit/reports/junit.xml"/>
+        <log type="coverage-html" target="phpunit/coverage/html" charset="UTF-8" yui="true" highlight="true"/>
+        <log type="coverage-text" target="phpunit/coverage/text.txt"/>
+        <log type="coverage-clover" target="phpunit/coverage/clover.xml"/>
+    </logging>
+</phpunit>
