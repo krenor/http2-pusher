@@ -43,4 +43,4 @@ This project makes use of an [editorconfig](http://editorconfig.org/). This ensu
 
 It's the first step in ensuring consistent code output. You might have to install the plugin for your editor of choice.  This projects .editorconfig file should kick in once you do.
 
-**Happy coding**!
+**Happy coding :)**!

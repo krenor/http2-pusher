@@ -1,4 +1,4 @@
-## Cache aware HTTP/2 pushing for laravel
+## Cache aware HTTP/2 pushing for Laravel
 
 [![Packagist][icon-version]][link-version]
 [![Travis][icon-travis]][link-travis]
@@ -34,8 +34,9 @@ You can configure three things
 
 ## Usage
 
-When you route a request through the `ServerPush` middleware, the response is scanned (unless its a `RedirectResponse` or either a `json` or `ajax` request) for any assets that can be pushed.  
-Alternatively you can use the `pushes()` method on the `Response` class, which extends the default `\Illuminate\Http\Response`, provided by this package's ServiceProvider. Using the `response()` helper works as fine, however hinting of the `pushes()` method will **not** be available.  
+* When you route a request through the `ServerPush` middleware, the response is scanned (unless its a `RedirectResponse` or either a `json` or `ajax` request) for any assets that can be pushed.  
+* Alternatively you can use the `pushes()` method on the `Response` class, which extends the default `\Illuminate\Http\Response`, provided by this package's ServiceProvider. 
+* Using the `response()` helper works as fine, however hinting of the `pushes()` method will **not** be available.  
 
 Both methods will add a `Link` header and a Cookie to the response with all the assets found and the configured via `global_pushes`. On subsequent requests the cookie will be scanned with its already pushed resources. If any new resources are available or if the pushed resources have changed the `Link` header and the Cookie will be extended to include these. 
 

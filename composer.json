@@ -1,14 +1,14 @@
 {
   "name": "krenor/http2-pusher",
-  "description": "W.I.P.",
+  "description": "Cache aware HTTP/2 pushing for Laravel.",
   "keywords": [
-    "laravel 5.5",
     "laravel",
     "middleware",
     "laravel middleware",
     "http2",
     "http2 push",
     "http2 cache",
+    "cache digest",
     "krenor"
   ],
   "license": "MIT",

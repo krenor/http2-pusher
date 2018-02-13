@@ -69,7 +69,7 @@ class Builder
         $supported = collect($resources)
             ->merge($this->settings['global_pushes'])
             ->filter(function ($resource) {
-                return array_key_exists($this->getExtension($resource), $this->extensionTypes);
+                return array_key_exists($this->extension($resource), $this->extensionTypes);
             });
 
         if ($supported->count() < 1) {
@@ -79,13 +79,13 @@ class Builder
         $transformed = $this->transform($supported);
         $cookie = $this->request->cookie($this->settings['cookie']['name']);
 
-        $pushable = $this->processCookieCache($transformed, $cookie);
+        $pushable = $this->pushable($transformed, $cookie);
 
         if ($pushable->count() < 1) {
             return null;
         }
 
-        $link = $this->buildLink($pushable);
+        $link = $this->link($pushable);
 
         $cookie = new Cookie(
             $this->settings['cookie']['name'],
@@ -106,9 +106,9 @@ class Builder
     private function transform(Collection $collection): Collection
     {
         return $collection->map(function ($path) {
-            $hash = $this->retrieveHash($path);
+            $hash = $this->hash($path);
 
-            $extension = $this->getExtension($path);
+            $extension = $this->extension($path);
 
             $type = $this->extensionTypes[$extension];
 
@@ -123,7 +123,7 @@ class Builder
      *
      * @return string
      */
-    private function retrieveHash(string $path): string
+    private function hash(string $path): string
     {
         $pieces = parse_url($path);
 
@@ -150,7 +150,7 @@ class Builder
      *
      * @return string
      */
-    private function getExtension($path): string
+    private function extension($path): string
     {
         return strtok(
             pathinfo($path, PATHINFO_EXTENSION),
@@ -161,25 +161,25 @@ class Builder
     /**
      * Check which resources already are cached.
      *
-     * @param Collection $pushable
+     * @param Collection $collection
      * @param string|null $cache
      *
      * @return Collection
      */
-    private function processCookieCache(Collection $pushable, $cache = null): Collection
+    private function pushable(Collection $collection, $cache = null): Collection
     {
         if ($cache === null) {
-            return $pushable;
+            return $collection;
         }
 
-        if ($cache === $pushable->toJson()) {
+        if ($cache === $collection->toJson()) {
             return collect();
         }
 
         $cached = json_decode($cache, true);
 
-        return $pushable->filter(function ($item) use ($cached) {
-            return !in_array($item, $cached);
+        return $collection->reject(function ($item) use ($cached) {
+            return in_array($item, $cached);
         });
     }
 
@@ -190,7 +190,7 @@ class Builder
      *
      * @return string
      */
-    private function buildLink(Collection $pushable): string
+    private function link(Collection $pushable): string
     {
         return $pushable->map(function ($item) {
             $push = "<{$item['path']}>; rel=preload; as={$item['type']}";

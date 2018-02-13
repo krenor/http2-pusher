@@ -15,7 +15,7 @@ class Http2PusherServiceProvider extends ServiceProvider
      *
      * @var string
      */
-    private $config = __DIR__ . '/../config/http2-pusher.php';
+    private $config = __DIR__ . '/../../config/http2-pusher.php';
 
     /**
      * Bootstrap any application services.

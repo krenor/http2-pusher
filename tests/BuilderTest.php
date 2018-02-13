@@ -11,7 +11,7 @@ class BuilderTest extends TestCase
     public function it_should_retrieve_or_create_a_file_hash()
     {
         $reflector = new ReflectionClass(Builder::class);
-        $method = $reflector->getMethod('retrieveHash');
+        $method = $reflector->getMethod('hash');
         $method->setAccessible(true);
 
         $resources = new Collection([
